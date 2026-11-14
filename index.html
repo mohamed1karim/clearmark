@@ -214,6 +214,7 @@ tr.click:hover td{background:var(--surface-2)}
 .ans-list .arow b{display:flex;align-items:center;gap:8px}
 .dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
 .ans-list input{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--surface)}
+.tfrac{display:inline-flex;flex-direction:column;align-items:center;font-weight:700;font-size:13px;line-height:1.05;min-width:22px}.tfrac i{display:block;width:100%;height:1.5px;background:currentColor;margin:1px 0}
 .state{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
 .focus{border-radius:14px;padding:14px;margin:8px 0 12px;border:2px solid var(--line);background:var(--surface-2)}
 .focus.bad{border-color:var(--bad);background:var(--bad-t)}
@@ -376,7 +377,7 @@ V['s-upload'] = () => {
     <div class="pick"><button aria-pressed="true">${t('results')}</button></div>
     <button class="btn" data-act="step" data-v="2">${t('next')}</button></div>`,null);
   const blurry=S.pages.some(p=>p.blur);
-  return phone(`${sTop(t('upload'),'s-home')}<div class="s-body">${steps}
+  return phone(`${sTop(t('upload'),'s-upload')}<div class="s-body">${steps}
     <p class="lbl">${t('step')} 2 ${t('of')} 3 · ${t('photo')}</p>
     <div class="viewfinder" id="vf"><div class="frame"></div><p>${t('lineUp')}</p></div>
     ${blurry?`<div class="warnbox" role="alert">⚠️ ${t('blurry')}</div>`:''}
@@ -456,14 +457,14 @@ V['t-verify'] = () => {
     const shape=r.id==='Q3'?`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" fill="none" stroke="#4A5468"/><rect x="1" y="1" width="16" height="16" fill="#9AA6B8"/><line x1="17" y1="1" x2="17" y2="33" stroke="#4A5468"/><line x1="1" y1="17" x2="33" y2="17" stroke="#4A5468"/></svg>`:'';
     return `<button class="region ${cls} ${S.sel===r.id?'sel':''}" data-act="sel" data-v="${r.id}"><span class="pq">${r.id}. ${r.prompt} ${shape}<span class="tag">${tag}</span></span>${handHTML(r)}</button>`}).join('');
   const rows=S.regions.map(r=>{const col=r.done&&r.conf!=='good'?'var(--ink)':{good:'var(--good)',warn:'var(--warn)',bad:'var(--bad)'}[r.conf];
-    return `<div class="arow ${S.sel===r.id?'sel':''}"><b><span class="dot" style="background:${col}"></span>${r.id}</b><input value="${esc(r.text)}" data-edit="${r.id}" aria-label="${r.id} extracted text"><span class="state">${r.done?'✓ OK':'Check'}</span></div>`}).join('');
+    return `<div class="arow ${S.sel===r.id?'sel':''}"><b><span class="dot" style="background:${col}"></span>${r.id}</b><span style="display:flex;gap:8px;align-items:center"><input value="${esc(r.text)}" data-edit="${r.id}" aria-label="${r.id} extracted text">${/^\d+\/\d+$/.test(r.text.trim())?`<span class="tfrac" aria-hidden="true"><span>${esc(r.text.split('/')[0])}</span><i></i><span>${esc(r.text.split('/')[1])}</span></span>`:''}</span><span class="state">${r.done?'✓ OK':'Check'}</span></div>`}).join('');
   let focus='';
   if(sel&&!sel.done){
     focus=`<div class="focus ${sel.conf}"><h4><span class="dot" style="background:${sel.conf==='bad'?'var(--bad)':'var(--warn)'}"></span>${sel.id}: ${sel.conf==='bad'?'likely wrong':'unsure'}${sel.id==='Q3'?' (fraction)':''}</h4>
       <div><span class="k">OCR read:</span><b>${esc(sel.ocr)}</b></div>
       <div class="sugg"><span class="k">Did you mean:</span>${sel.sugg.map(s=>`<button data-act="pick" data-v="${s}">${s}</button>`).join('')}</div>
       ${sel.id==='Q3'&&S.clarify==='asked'?`<div class="reply">⏳ Waiting for Youssef’s reply…</div>`:''}
-      ${sel.id==='Q3'&&S.clarify==='replied'?`<div class="reply">💬 <b>Youssef replied:</b> ${S.reply.kind==='text'?`<b>${esc(S.reply.v)}</b>`:`<img src="${S.reply.v}" alt="Youssef’s drawing">`}${S.reply.kind==='text'?` <button class="tbtn" data-act="useReply">Use this answer</button>`:''}</div>`:''}
+      ${sel.id==='Q3'&&S.clarify==='replied'?`<div class="reply">💬 <b>Youssef replied:</b> ${S.reply.kind==='text'?`<b>${esc(S.reply.v)}</b>`:`<img src="${S.reply.v}" alt="Youssef’s drawing">`}${S.reply.kind==='text'?` <button class="tbtn" data-act="useReply">Use this answer</button>`:`<div class="muted" style="font-size:13px;margin-top:4px">Pick a reading or tap Edit and type what he drew.</div>`}</div>`:''}
       <div class="btns"><button class="tbtn pri" data-act="accept">Accept</button><button class="tbtn" data-act="focusEdit">Edit</button>${sel.id==='Q3'&&S.clarify==='none'?`<button class="tbtn" data-act="ask">Ask student</button>`:''}</div></div>`;
   }else if(sel){focus=`<div class="focus"><b>${sel.id}</b> is checked. Edit the text below if needed.</div>`}
   else focus=`<div class="focus">Select an answer on the scan, or use <b>Jump to next uncertain</b>.</div>`;
@@ -488,6 +489,7 @@ V['t-confirm'] = () => {
     <div class="card flag ${fl}"><h3>🚩 Red flag ${fl==='confirmed'?'· confirmed':fl==='dismissed'?'· dismissed':''}</h3><p style="margin:0 0 4px"><b>Needs support in fractions</b></p><p class="muted" style="margin:0 0 10px">Raised after 2 low grades in a row (quiz 2 and 3) and a repeated fraction mistake.</p>
       ${fl==='open'?`<div class="btns"><button class="tbtn danger" data-act="flag" data-v="confirmed" ${pub?'disabled':''}>Confirm</button><button class="tbtn" data-act="flag" data-v="dismissed" ${pub?'disabled':''}>Dismiss</button></div>`:
         `<button class="tbtn" data-act="flag" data-v="open" ${pub?'disabled':''}>Undo</button>`}
+      ${fl==='dismissed'?`<label class="lbl" style="display:block;margin-top:12px">Reason for dismissing<select id="dreason" data-act="dreason" ${pub?'disabled':''} style="display:block;width:100%;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--surface)">${['Choose a reason','Just one difficult quiz','Already getting extra support','Marking or reading mistake','Other'].map(o=>`<option ${S.dreason===o?'selected':''}>${o}</option>`).join('')}</select></label>`:''}
       ${fl==='confirmed'?`<div class="fu" style="margin-top:12px"><b>Follow-up</b><label><input type="checkbox" data-act="fu" data-v="fuTalk" ${S.fuTalk?'checked':''}> Talk with Youssef</label><label><input type="checkbox" data-act="fu" data-v="fuParents" ${S.fuParents?'checked':''}> Notify parents if it continues</label></div>`:''}
     </div></div></div>`);
 };
@@ -501,6 +503,7 @@ V['p-home'] = () => `<div class="parent">${phone(`<div class="s-top"><h2>Youssef
   ${S.status==='published'?`<div class="grade-card"><div class="g">${total()} / 10</div><small>Math quiz 4 · checked by Ms. Mariam</small></div>`:`<div class="locked">No new grades yet.</div>`}
   <div class="s-h">Grades</div><div class="mini-chart">${chart(grades())}</div>
   ${S.status==='published'&&S.flag==='confirmed'?`<div class="s-h">From the teacher</div><div class="weak"><span style="font-size:22px">🚩</span><b>Youssef needs a bit of extra support in fractions.${S.fuParents?' Ms. Mariam will contact you if it continues.':''}</b></div>`:''}
+  <label class="weak" style="background:var(--surface-2);border-color:var(--line);margin-top:18px;cursor:pointer"><b>Also email me new grades</b><input type="checkbox" data-act="pemail" ${S.pemail!==false?'checked':''} style="width:22px;height:22px;accent-color:var(--ink)"></label>
   </div>`,null)}</div>`;
 
 V['start'] = () => `<div class="start"><h1>Exam checking where the teacher stays in charge</h1>
@@ -535,7 +538,7 @@ function setupPad(){
 
 /* ---------- actions ---------- */
 const A = {
-  go:v=>go(v), role:v=>go(v),
+  go:v=>{if(v==='s-upload'){S.step=1;render();return}go(v)}, role:v=>go(v),
   logout:()=>go('start'),
   lang:v=>{S.lang=v;save();render()},
   startUpload:()=>{S.step=1;S.pages=[];save();go('s-upload')},
@@ -568,6 +571,7 @@ const A = {
   fu:(v,el)=>{S[v]=el.checked;save()},
   saveDraft:()=>{S.feedback=document.getElementById('fbk').value;save();toast('Draft saved')},
   publish:()=>{S.feedback=document.getElementById('fbk').value;save();
+    if(S.flag==='dismissed'&&(!S.dreason||S.dreason==='Choose a reason')){modal('Add a reason','Choose why you are dismissing the red flag before publishing.','Got it',()=>{});return}
     if(S.flag==='open'){modal('Red flag still open','Confirm or dismiss the fractions red flag before publishing, so Youssef sees the right weak spots.','Got it',()=>{});return}
     modal('Publish to Youssef?',`He will see his grade (${total()}/10), your feedback and his weak spots.`,'Publish',()=>{S.status='published';S.notifs.push('graded');save();render();toast('Published')})}
 };
@@ -579,6 +583,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const el=e.target;
   if(el.dataset.act==='fu') A.fu(el.dataset.v,el);
+  if(el.dataset.act==='dreason') S.dreason=el.value;
+  if(el.dataset.act==='pemail') S.pemail=el.checked;
   if(el.dataset.edit){const r=S.regions.find(x=>x.id===el.dataset.edit);r.text=el.value;r.done=true;save();render()}
 });
 render();
