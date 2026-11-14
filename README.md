@@ -27,4 +27,4 @@ https://mohamed1karim.github.io/clearmark/.
 6. **Student** → Exams tab to see grade, feedback, weak spot and practice. Use EN | DE to switch language.
 7. **Parent** → see the grade, progress and confirmed red flag.
 
-Use **Reset demo** (top right) to start over. Progress is kept in the browser's local storage.
+Use **Log out** (top right) to return to the role selection screen and switch between Student, Teacher and Parent. Reload the page to start over.

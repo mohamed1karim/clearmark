@@ -260,12 +260,7 @@ textarea{width:100%;min-height:96px;border:1px solid var(--line);border-radius:1
 <body>
 <header class="demo">
   <div class="brand"><div class="brand-mark"><span></span></div>ClearMark</div>
-  <div class="seg" role="group" aria-label="Switch view">
-    <button data-act="role" data-v="s-home" id="r-s">Student</button>
-    <button data-act="role" data-v="t-dash" id="r-t">Teacher</button>
-    <button data-act="role" data-v="p-home" id="r-p">Parent</button>
-  </div>
-  <button class="ghost" data-act="reset">Reset demo</button>
+  <button class="ghost" data-act="logout" id="logout">Log out</button>
 </header>
 <main id="app"></main>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -306,8 +301,8 @@ function fresh(){
     marks:{},flag:'open',fuTalk:false,fuParents:false,feedback:DEFAULT_FB,notifs:[],seen:0,pracPick:null};
 }
 let S;
-try{S = JSON.parse(localStorage.getItem('clearmark')) || fresh()}catch(e){S = fresh()}
-function save(){try{localStorage.setItem('clearmark',JSON.stringify(S))}catch(e){}}
+S = fresh();
+function save(){}
 const t = k => (T[S.lang]||T.en)[k] || T.en[k];
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const aiMark = r => (r.text.replace(/\s/g,'') === KEY[r.id] ? 2 : 0);
@@ -448,7 +443,7 @@ V['t-dash'] = () => {
   return tShell('t-dash',`<div class="t-head"><h2>Grade 3 · Math quiz 4</h2><span class="sub">Exam language: English</span></div>
   <div class="stats"><div class="card stat"><b>${toV}</b><span>To verify</span></div><div class="card stat"><b>${toC}</b><span>To confirm</span></div><div class="card stat"><b>${flags}</b><span>Open red flags</span></div><div class="card stat"><b>${4+(S.status==='published'?1:0)}/5</b><span>Published</span></div></div>
   <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Student</th><th>Status</th><th>Grade</th><th></th></tr></thead><tbody>
-  <tr class="${target?'click':''}" ${target?`data-act="go" data-v="${target}"`:''}><td><b>Youssef Ahmed</b></td><td>${stChip()}</td><td>${S.status==='published'?total()+'/10':'–'}</td><td>${target?'<span class="muted">Open ›</span>':'<span class="hint">Switch to Student to upload</span>'}</td></tr>
+  <tr class="${target?'click':''}" ${target?`data-act="go" data-v="${target}"`:''}><td><b>Youssef Ahmed</b></td><td>${stChip()}</td><td>${S.status==='published'?total()+'/10':'–'}</td><td>${target?'<span class="muted">Open ›</span>':'<span class="hint">Waiting for upload</span>'}</td></tr>
   ${others.map(o=>`<tr><td>${o[0]}</td><td><span class="tchip p">${o[1]}</span></td><td>${o[2]}/10</td><td></td></tr>`).join('')}
   </tbody></table></div></div>`);
 };
@@ -520,7 +515,7 @@ function render(){
   app.classList.toggle('is-phone', v.startsWith('s-')||v==='p-home');
   app.innerHTML=V[v]();
   const r=v.startsWith('s-')?'r-s':v.startsWith('t-')?'r-t':v.startsWith('p-')?'r-p':null;
-  ['r-s','r-t','r-p'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed',String(id===r)));
+  document.getElementById('logout').style.display = v==='start' ? 'none' : '';
   document.documentElement.lang = v.startsWith('s-') ? S.lang : 'en';
   if(v==='s-clarify') setupPad();
   window.scrollTo(0,0);
@@ -541,7 +536,7 @@ function setupPad(){
 /* ---------- actions ---------- */
 const A = {
   go:v=>go(v), role:v=>go(v),
-  reset:()=>modal('Reset the demo?','All demo progress will be cleared.','Reset',()=>{S=fresh();save();go('start')}),
+  logout:()=>go('start'),
   lang:v=>{S.lang=v;save();render()},
   startUpload:()=>{S.step=1;S.pages=[];save();go('s-upload')},
   step:v=>{S.step=+v;save();render()},
